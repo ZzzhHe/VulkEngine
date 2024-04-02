@@ -2,6 +2,7 @@
 
 #include "Window.hpp"
 #include "Pipeline.hpp"
+#include "Device.hpp"
 
 class Application {
 public:
@@ -11,5 +12,11 @@ public:
 	void run();
 private:
 	Window m_appWindow {WIDTH, HEIGHT, "VulkEngine!"};
-	Pipeline m_pipeline {"shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv"};
+	Device m_appDevice {m_appWindow};
+	Pipeline m_appPipeline {
+		m_appDevice,
+		"shaders/simple_shader.vert.spv",
+		"shaders/simple_shader.frag.spv",
+		Pipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)
+	};
 };

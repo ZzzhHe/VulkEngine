@@ -4,8 +4,13 @@
 #include <fstream>
 #include <stdexcept>
 
-Pipeline::Pipeline(const std::string& vertFilepath, const std::string& fragFilepath) {
-	createGraphicsPipeline(vertFilepath, fragFilepath);
+Pipeline::Pipeline(
+		Device& device,
+		const std::string& vertFilepath,
+		const std::string& fragFilepath,
+		const PipelineConfigInfo& configInfo
+	) : m_device_ref(device) {
+	createGraphicsPipeline(vertFilepath, fragFilepath, configInfo);
 }
 
 std::vector<char> Pipeline::readFile(const std::string& path) {
@@ -28,10 +33,32 @@ std::vector<char> Pipeline::readFile(const std::string& path) {
 }
 
 void Pipeline::createGraphicsPipeline(
-	const std::string& vertFilepath, const std::string& fragFilepath) {
+	  const std::string& vertFilepath,
+	  const std::string& fragFilepath,
+	  const PipelineConfigInfo& configInfo
+	) {
+	
 	auto vertCode = readFile(vertFilepath);
 	auto fragCode = readFile(fragFilepath);
 	
 	std::cout << "Vertex Shader Code Size: " << vertCode.size() << "\n";
 	std::cout << "Vertex Shader Code Size: " << fragCode.size() << "\n";
 }
+
+void Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule) {
+	VkShaderModuleCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	createInfo.codeSize = code.size();
+	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data()); // careful! uint32_t ? char
+	
+	if (vkCreateShaderModule(m_device_ref.device(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create shader module");
+	}
+}
+
+PipelineConfigInfo Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height) {
+	PipelineConfigInfo configInfo = {};
+	
+	return configInfo;
+}
+
