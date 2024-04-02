@@ -9,8 +9,9 @@ public:
 	Window(int width, int height, std::string name);
 	~Window();
 	
-	Window(const Window &) = delete;
-	Window &operator = (const Window &) = delete;
+	// in case unsafely copy
+	Window(const Window &) = delete; // delete default copy constructor
+	Window &operator = (const Window &) = delete; // delete default copy assignment operator
 	
 	bool shouldClose();
 private:
