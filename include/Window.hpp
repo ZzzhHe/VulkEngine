@@ -14,6 +14,9 @@ public:
 	Window &operator = (const Window &) = delete; // delete default copy assignment operator
 	
 	bool shouldClose();
+	
+	void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+	
 private:
 	void initWindow();
 	std::string m_windowName;
