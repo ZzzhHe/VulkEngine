@@ -14,6 +14,7 @@ public:
 	Window &operator = (const Window &) = delete; // delete default copy assignment operator
 	
 	bool shouldClose();
+	VkExtent2D getExtent();
 	
 	void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 	
