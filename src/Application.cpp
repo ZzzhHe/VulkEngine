@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 Application::Application() {
+	loadModel();
 	createPipelineLayout();
 	createPipeline();
 	createCommandBuffers();
@@ -20,6 +21,16 @@ void Application::run() {
 		
 		vkDeviceWaitIdle(m_device.device()); // fix: All submitted commands that refer to pipeline must have completed execution
 	}
+}
+
+void Application::loadModel() {
+	std::vector<Model::Vertex> vertices {
+		{{0.0, -0.5}},
+		{{0.5, 0.5}},
+		{{-0.5, 0.5}}
+	};
+	
+	m_model = std::make_unique<Model>(m_device, vertices);
 }
 
 void Application::createPipelineLayout() {
@@ -85,7 +96,8 @@ void Application::createCommandBuffers(){
 		vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		
 		m_pipeline->bind(m_commandBuffers[i]);
-		vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+		m_model->bind(m_commandBuffers[i]);
+		m_model->draw(m_commandBuffers[i]);
 		
 		vkCmdEndRenderPass(m_commandBuffers[i]);
 		if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS) {
