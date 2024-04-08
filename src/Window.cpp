@@ -15,24 +15,23 @@ Window::~Window() {
 void Window::initWindow() {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // tell glfw to not use OPENGL
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // not use glfw resize
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	
 	m_window = glfwCreateWindow(m_width, m_height, m_windowName.c_str(), nullptr, nullptr);
-}
-
-bool Window::shouldClose() {
-	return glfwWindowShouldClose(m_window);
-}
-
-VkExtent2D Window::getExtent() {
-	return {
-		static_cast<uint32_t>(m_width),
-		static_cast<uint32_t>(m_height)
-	};
+	glfwSetWindowUserPointer(m_window, this); // to parents 
+	glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
 }
 
 void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) {
 	if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create the window surface");
 	}
+}
+
+
+void Window::framebufferResizeCallback (GLFWwindow *window, int width, int height) {
+	auto resize_window = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+	resize_window->m_framebufferResized = true;
+	resize_window->m_width = width;
+	resize_window->m_height = height;
 }
