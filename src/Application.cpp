@@ -115,6 +115,9 @@ void Application::createCommandBuffers(){
 }
 
 void Application::recordCommandBuffer(int imageIndex) {
+	static int frame = 0;
+	frame = (frame + 1) % 100;
+	
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	
@@ -156,7 +159,7 @@ void Application::recordCommandBuffer(int imageIndex) {
 	
 	for (int j = 0; j < 4; j ++) {
 		SimplePushConstantData push {};
-		push.offset = {0.0f, -0.4f + j * 0.25f};
+		push.offset = {-0.5f + frame * 0.01f, -0.4f + j * 0.25f};
 		push.color = {0.0f, 0.0f, 0.2f + 0.2f * j};
 		
 		vkCmdPushConstants(
