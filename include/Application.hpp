@@ -3,8 +3,8 @@
 #include "Window.hpp"
 #include "Pipeline.hpp"
 #include "Device.hpp"
-#include "SwapChain.hpp"
 #include "GameObject.hpp"
+#include "Renderer.hpp"
 
 #include <memory>
 #include <vector>
@@ -26,18 +26,12 @@ private:
 	void loadGameObject();
 	void createPipelineLayout();
 	void createPipeline();
-	void createCommandBuffers();
-	void freeCommandBuffers();
-	void drawFrame();
-	void recreateSwapChain();
-	void recordCommandBuffer(int imageIndex);
 	void renderGameObjects(VkCommandBuffer commandBuffer);
 	
 	Window m_window {WIDTH, HEIGHT, "VulkEngine!"};
 	Device m_device {m_window};
-	std::unique_ptr<SwapChain> m_swapChain;
+	Renderer m_renderer{m_window, m_device};
 	std::unique_ptr<Pipeline> m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
-	std::vector<VkCommandBuffer> m_commandBuffers;
 	std::vector<GameObject> m_gameObjects;
 };
