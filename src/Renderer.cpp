@@ -27,10 +27,11 @@ void Renderer::recreateSwapChain() {
 	if (m_swapChain == nullptr) {
 		m_swapChain = std::make_unique<SwapChain>(m_device, extent);
 	} else {
-		m_swapChain = std::make_unique<SwapChain>(m_device, extent, std::move(m_swapChain));
-		if (m_swapChain->imageCount() != m_commandBuffers.size()) {
-			freeCommandBuffers();
-			createCommandBuffers();
+		std::shared_ptr<SwapChain> oldSwapChain = std::move(m_swapChain);
+		m_swapChain = std::make_unique<SwapChain>(m_device, extent, oldSwapChain);
+		
+		if(!oldSwapChain->compareSwapFormats(*m_swapChain.get())) {
+			throw std::runtime_error("Swap chain image(or depth) format has changed!");
 		}
 	}
 	
@@ -39,7 +40,7 @@ void Renderer::recreateSwapChain() {
 }
 
 void Renderer::createCommandBuffers(){
-	m_commandBuffers.resize(m_swapChain->imageCount());
+	m_commandBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 	
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -106,6 +107,7 @@ void Renderer::endFrame() {
 	}
 	
 	m_isFrameStarted = false;
+	m_currentFrameIndex = (m_currentFrameIndex + 1) % SwapChain::MAX_FRAMES_IN_FLIGHT;
 	
 }
 
@@ -160,11 +162,11 @@ VkRenderPass Renderer::getSwapChainRenderPass() const {
 
 VkCommandBuffer Renderer::getCurrentCommandBuffer() const {
 	assert(m_isFrameStarted && "Cannot get command buffer when frame not in progress");
-	return m_commandBuffers[m_currentImageIndex];
+	return m_commandBuffers[m_currentFrameIndex];
 }
 
 int Renderer::getFrameIndex() const {
 	assert(m_isFrameStarted && "Cannot get frame index when frame not in progress");
-	return m_currentImageIndex;
+	return m_currentFrameIndex;
 }
 
