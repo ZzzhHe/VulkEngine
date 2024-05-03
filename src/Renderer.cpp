@@ -160,6 +160,10 @@ VkRenderPass Renderer::getSwapChainRenderPass() const {
 	return m_swapChain->getRenderPass();
 }
 
+float Renderer::getAspectRatio() {
+	return m_swapChain->extentAspectRatio();
+}
+
 VkCommandBuffer Renderer::getCurrentCommandBuffer() const {
 	assert(m_isFrameStarted && "Cannot get command buffer when frame not in progress");
 	return m_commandBuffers[m_currentFrameIndex];

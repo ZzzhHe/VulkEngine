@@ -23,6 +23,7 @@ public:
 	
 	bool isFrameInProgress() const;
 	VkRenderPass getSwapChainRenderPass() const;
+	float getAspectRatio();
 	VkCommandBuffer getCurrentCommandBuffer() const;
 	int getFrameIndex() const;
 	
