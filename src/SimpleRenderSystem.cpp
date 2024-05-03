@@ -10,8 +10,7 @@
 #include <stdexcept>
 
 struct SimplePushConstantData {
-	glm::mat2 transform{1.f};
-	glm::vec2 offset;
+	glm::mat4 transform{1.f};
 	alignas(16) glm::vec3 color; // align requirement
 };
 
@@ -63,11 +62,12 @@ void SimpleRenderSystem::renderGameObjects(VkCommandBuffer commandBuffer, std::v
 	m_pipeline->bind(commandBuffer);
 	 
 	for (auto& obj : gameObjects) {
-		obj.transform2d.rotation = glm::mod(obj.transform2d.rotation + .01f, glm::two_pi<float>());
+		obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + .01f, glm::two_pi<float>());
+		obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + .005f, glm::two_pi<float>());
+		
 		SimplePushConstantData push {};
-		push.offset = obj.transform2d.translation;
 		push.color = obj.color;
-		push.transform = obj.transform2d.mat2();
+		push.transform = obj.transform.mat4();
 		
 		vkCmdPushConstants(
 		   commandBuffer,
