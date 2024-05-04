@@ -13,11 +13,13 @@ public:
 	Window(const Window &) = delete; // delete default copy constructor
 	Window &operator = (const Window &) = delete; // delete default copy assignment operator
 	
-	bool shouldClose() { return glfwWindowShouldClose(m_window); }
+	bool shouldClose();
 
-	VkExtent2D getExtent() { return { static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height) }; }
-	bool wasWindowResize() { return m_framebufferResized; }
-	void resetWindowResizedFlag() { m_framebufferResized = false; }
+	VkExtent2D getExtent();
+	bool wasWindowResize();
+	void resetWindowResizedFlag();
+	
+	GLFWwindow* getGLFWwindow() const;
 	
 	void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 	

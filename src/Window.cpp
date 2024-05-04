@@ -35,3 +35,23 @@ void Window::framebufferResizeCallback (GLFWwindow *window, int width, int heigh
 	resize_window->m_width = width;
 	resize_window->m_height = height;
 }
+
+bool Window::shouldClose() {
+	return glfwWindowShouldClose(m_window);
+}
+
+VkExtent2D Window::getExtent() {
+	return { static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height) };
+}
+
+bool Window::wasWindowResize() {
+	return m_framebufferResized;
+}
+
+void Window::resetWindowResizedFlag() {
+	m_framebufferResized = false;
+}
+
+GLFWwindow*  Window::getGLFWwindow() const{
+	return m_window;
+}
