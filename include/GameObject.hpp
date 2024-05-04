@@ -15,7 +15,7 @@ class GameObject {
 		
 		glm::mat4 mat4() {
 			auto transform = glm::translate(glm::mat4{1.f}, translation);
-			// Rotation convention uses tait-bryan angles with axis order X(1), Y(2), Z(3)
+			// Rotation convention uses tait-bryan angles with XYZ
 			transform = glm::rotate(transform, rotation.x, {1.f, 0.f, 0.f});
 			transform = glm::rotate(transform, rotation.y, {0.f, 1.f, 0.f});
 			transform = glm::rotate(transform, rotation.z, {0.f, 0.f, 1.f});
