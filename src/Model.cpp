@@ -24,16 +24,30 @@ void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
 	
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * m_vertexCount;
 	
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	
 	m_device_ref.createBuffer(
 			  bufferSize,
-			  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			  m_vertexBuffer, m_vertexBufferMemory); // Host: Cpu, Device: Gpu
+			  stagingBuffer, stagingBufferMemory); // Host: Cpu, Device: Gpu
 	
 	void *data;
-	vkMapMemory(m_device_ref.device(), m_vertexBufferMemory, 0, bufferSize, 0, &data); // Host - Device
+	vkMapMemory(m_device_ref.device(), stagingBufferMemory, 0, bufferSize, 0, &data); // Host - Device
 	memcpy(data, vertices.data(), static_cast<size_t>(bufferSize)); // auto flush() from Host to Device
-	vkUnmapMemory(m_device_ref.device(), m_vertexBufferMemory);
+	vkUnmapMemory(m_device_ref.device(), stagingBufferMemory);
+	
+	m_device_ref.createBuffer(
+			  bufferSize,
+			  VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			  m_vertexBuffer, m_vertexBufferMemory);
+	
+	m_device_ref.copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
+	
+	vkDestroyBuffer(m_device_ref.device(), stagingBuffer, nullptr);
+	vkFreeMemory(m_device_ref.device(), stagingBufferMemory, nullptr);
 }
 
 void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
@@ -46,16 +60,30 @@ void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
 	
 	VkDeviceSize bufferSize = sizeof(indices[0]) * m_indexCount;
 	
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	
 	m_device_ref.createBuffer(
 			  bufferSize,
-			  VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			  m_indexBuffer, m_indexBufferMemory); // Host: Cpu, Device: Gpu
+			  stagingBuffer, stagingBufferMemory); // Host: Cpu, Device: Gpu
 	
 	void *data;
-	vkMapMemory(m_device_ref.device(), m_indexBufferMemory, 0, bufferSize, 0, &data); // Host - Device
+	vkMapMemory(m_device_ref.device(), stagingBufferMemory, 0, bufferSize, 0, &data); // Host - Device
 	memcpy(data, indices.data(), static_cast<size_t>(bufferSize)); // auto flush() from Host to Device
-	vkUnmapMemory(m_device_ref.device(), m_indexBufferMemory);
+	vkUnmapMemory(m_device_ref.device(), stagingBufferMemory);
+	
+	m_device_ref.createBuffer(
+			  bufferSize,
+			  VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			  m_indexBuffer, m_indexBufferMemory);
+
+	m_device_ref.copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
+	
+	vkDestroyBuffer(m_device_ref.device(), stagingBuffer, nullptr);
+	vkFreeMemory(m_device_ref.device(), stagingBufferMemory, nullptr);
 }
 
 void Model::bind(VkCommandBuffer commandBuffer) {
