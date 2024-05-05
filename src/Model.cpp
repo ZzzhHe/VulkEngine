@@ -1,10 +1,27 @@
 #include "Model.hpp"
+#include "utils.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
 #include <cassert>
+#include <cstring>
 #include <iostream>
+#include <unordered_map>
+
+namespace std {
+	template<>
+	struct hash<Model::Vertex> {
+		size_t operator()(Model::Vertex const &vertex) const {
+			size_t seed = 0;
+			hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+			return seed;
+		}
+	};
+}
 
 Model::Model(Device &device, const Builder &builder)
 	:m_device_ref(device) {
@@ -51,7 +68,7 @@ void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
 	
 	m_device_ref.createBuffer(
 			  bufferSize,
-			  VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			  m_vertexBuffer, m_vertexBufferMemory);
 	
@@ -152,6 +169,8 @@ void Model::Builder::loadModel(const std::string& filepath) {
 	vertices.clear();
 	indices.clear();
 	
+	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+	
 	for (const auto &shape : shapes) {
 		for (const auto &index : shape.mesh.indices) {
 			Vertex vertex{};
@@ -188,7 +207,12 @@ void Model::Builder::loadModel(const std::string& filepath) {
 				};
 			}
 			
-			vertices.push_back(vertex);
+			if (uniqueVertices.count(vertex) == 0) {
+				// if vertex is new
+				uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+				vertices.push_back(vertex);
+			}
+			indices.push_back(uniqueVertices[vertex]);
 		}
 	}
 	
