@@ -2,14 +2,20 @@
 
 #include <cassert>
 
-Model::Model(Device &device, const std::vector<Vertex> &vertices)
+Model::Model(Device &device, const Builder &builder)
 	:m_device_ref(device) {
-		createVertexBuffers(vertices);
+		createVertexBuffers(builder.vertices);
+		createIndexBuffers(builder.indices);
 }
 
 Model::~Model() {
 	vkDestroyBuffer(m_device_ref.device(), m_vertexBuffer, nullptr);
 	vkFreeMemory(m_device_ref.device(), m_vertexBufferMemory, nullptr);
+	
+	if (m_hasIndexBuffer) {
+		vkDestroyBuffer(m_device_ref.device(), m_indexBuffer, nullptr);
+		vkFreeMemory(m_device_ref.device(), m_indexBufferMemory, nullptr);
+	}
 }
 
 void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
@@ -30,14 +36,44 @@ void Model::createVertexBuffers(const std::vector<Vertex> &vertices) {
 	vkUnmapMemory(m_device_ref.device(), m_vertexBufferMemory);
 }
 
+void Model::createIndexBuffers(const std::vector<uint32_t> &indices) {
+	m_indexCount = static_cast<uint32_t>(indices.size());
+	m_hasIndexBuffer = m_indexCount > 0;
+	
+	if (!m_hasIndexBuffer) {
+		return ;
+	}
+	
+	VkDeviceSize bufferSize = sizeof(indices[0]) * m_indexCount;
+	
+	m_device_ref.createBuffer(
+			  bufferSize,
+			  VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			  m_indexBuffer, m_indexBufferMemory); // Host: Cpu, Device: Gpu
+	
+	void *data;
+	vkMapMemory(m_device_ref.device(), m_indexBufferMemory, 0, bufferSize, 0, &data); // Host - Device
+	memcpy(data, indices.data(), static_cast<size_t>(bufferSize)); // auto flush() from Host to Device
+	vkUnmapMemory(m_device_ref.device(), m_indexBufferMemory);
+}
+
 void Model::bind(VkCommandBuffer commandBuffer) {
 	VkBuffer buffers[] = {m_vertexBuffer};
 	VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+	
+	if (m_hasIndexBuffer) {
+		vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	}
 }
 
 void Model::draw(VkCommandBuffer commandBuffer) {
-	vkCmdDraw(commandBuffer, m_vertexCount, 1, 0, 0);
+	if (m_hasIndexBuffer) {
+		vkCmdDrawIndexed(commandBuffer, m_indexCount, 1, 0, 0, 0);
+	} else {
+		vkCmdDraw(commandBuffer, m_vertexCount, 1, 0, 0);
+	}
 }
 
 std::vector<VkVertexInputBindingDescription> Model::Vertex::getBindingDescription() {
