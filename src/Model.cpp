@@ -141,7 +141,7 @@ std::vector<VkVertexInputBindingDescription> Model::Vertex::getBindingDescriptio
 }
 
 std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributeDescriptions() {
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
 	
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
@@ -152,6 +152,16 @@ std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributeDescri
 	attributeDescriptions[1].location = 1;
 	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributeDescriptions[1].offset = offsetof(Vertex, color);
+	
+	attributeDescriptions[2].binding = 0;
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(Vertex, normal);
+	
+	attributeDescriptions[3].binding = 0;
+	attributeDescriptions[3].location = 3;
+	attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[3].offset = offsetof(Vertex, uv);
 	
 	return attributeDescriptions;
 }
@@ -181,17 +191,12 @@ void Model::Builder::loadModel(const std::string& filepath) {
 					attrib.vertices[3 * index.vertex_index + 1],
 					attrib.vertices[3 * index.vertex_index + 2],
 				};
-				// optional
-				auto colorIndex = 3 * index.vertex_index + 2;
-				if (colorIndex < attrib.colors.size()) {
-					vertex.color = {
-						attrib.colors[colorIndex - 2],
-						attrib.colors[colorIndex - 1],
-						attrib.colors[colorIndex - 0],
-					};
-				} else {
-					vertex.color = {1.f, 1.f, 1.f};
-				}
+				
+				vertex.color = {
+					attrib.colors[3 * index.vertex_index + 0],
+					attrib.colors[3 * index.vertex_index + 1],
+					attrib.colors[3 * index.vertex_index + 2],
+				};
 			}
 			if (index.normal_index >= 0) {
 				vertex.normal = {

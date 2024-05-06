@@ -60,7 +60,7 @@ void Application::run() {
 
 
 void Application::loadGameObject() {
-	std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/cube.obj");
+	std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/flat_vase.obj");
 	// one model can be used in multiple game objects
    
 	auto gameObj = GameObject::createGameObject();
