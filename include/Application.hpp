@@ -4,6 +4,7 @@
 #include "Device.hpp"
 #include "GameObject.hpp"
 #include "Renderer.hpp"
+#include "Descriptors.hpp"
 
 #include <memory>
 #include <vector>
@@ -28,5 +29,8 @@ private:
 	Device m_device {m_window};
 	Renderer m_renderer{m_window, m_device};
 	
+	
+	// the order of declaration matters
+	std::unique_ptr<DescriptorPool> m_globalPool{};
 	std::vector<GameObject> m_gameObjects;
 };

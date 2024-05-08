@@ -12,7 +12,7 @@
 class SimpleRenderSystem {
 public:
 	
-	SimpleRenderSystem(Device& device, VkRenderPass renderPass);
+	SimpleRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalDescriptorSetLayout);
 	~SimpleRenderSystem();
 	
 	SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -20,7 +20,7 @@ public:
 	void renderGameObjects(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
 	
 private:
-	void createPipelineLayout();
+	void createPipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
 	void createPipeline(VkRenderPass renderPass);
 	
 	
