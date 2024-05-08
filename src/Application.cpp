@@ -17,7 +17,10 @@
 
 struct GlobalUniform { // Global Uniform Buffer Object
 	glm::mat4 projectionView{1.f};
-	glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+	glm::vec4 ambientLightColor{1.f, 1.f, 1.f, 0.1f};
+	glm::vec3 lightPos{-1.f};
+	alignas(16) glm::vec3 viewerPos{0.f};
+	alignas(16) glm::vec4 lightColor{1.f}; // w: light intensity [0,1]
 };
 
 Application::Application() {
@@ -45,7 +48,7 @@ void Application::run() {
 	}
 	
 	auto globalSetLayout = DescriptorSetLayout::Builder(m_device)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 		.build();
 	
 	std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -81,7 +84,7 @@ void Application::run() {
 		camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 		
 		float aspect = m_renderer.getAspectRatio();
-		camera.setPerspectProjection(glm::radians(60.f), aspect, 0.1f, 10.f);
+		camera.setPerspectProjection(glm::radians(60.f), aspect, 0.1f, 100.f);
 		
 		if (auto commandBuffer = m_renderer.beginFrame()) {
 			int frameIndex = m_renderer.getFrameIndex();
@@ -97,6 +100,7 @@ void Application::run() {
 			// update
 			GlobalUniform ubo{};
 			ubo.projectionView = camera.getProjection() * camera.getView();
+			ubo.viewerPos = viewerObject.transform.translation;
 			uboBuffers[frameIndex]->writeToBuffer(&ubo);
 			uboBuffers[frameIndex]->flush();
 			
@@ -111,16 +115,13 @@ void Application::run() {
 	}
 }
 
-
-
-
 void Application::loadGameObject() {
 	std::shared_ptr<Model> model = Model::createModelFromFile(m_device, "models/flat_vase.obj");
 	// one model can be used in multiple game objects
    
 	auto flatVase = GameObject::createGameObject();
 	flatVase.model = model;
-	flatVase.transform.translation = {-.5f, .5f, 2.5f};
+	flatVase.transform.translation = {-.2f, .5f, 0.5f};
 	flatVase.transform.scale = {.5f, .5f, .5f};
 	
 	m_gameObjects.push_back(std::move(flatVase));
@@ -130,8 +131,18 @@ void Application::loadGameObject() {
    
 	auto smoothVase = GameObject::createGameObject();
 	smoothVase.model = model;
-	smoothVase.transform.translation = {.5f, .5f, 2.5f};
+	smoothVase.transform.translation = {.2f, .5f, 0.5f};
 	smoothVase.transform.scale = {.5f, .5f, .5f};
 	
 	m_gameObjects.push_back(std::move(smoothVase));
+	
+	model = Model::createModelFromFile(m_device, "models/quad.obj");
+	// one model can be used in multiple game objects
+   
+	auto floor = GameObject::createGameObject();
+	floor.model = model;
+	floor.transform.translation = {0.f, 0.5f, 0.f};
+	floor.transform.scale = {3.f, 1.f, 3.f};
+	
+	m_gameObjects.push_back(std::move(floor));
 }
