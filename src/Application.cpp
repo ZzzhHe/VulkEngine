@@ -28,16 +28,17 @@ Application::~Application() { }
 
 void Application::run() {
 	
-	Buffer globalUniformBuffer{
-		m_device,
-		sizeof(GlobalUniform),
-		SwapChain::MAX_FRAMES_IN_FLIGHT,
-		VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-		m_device.properties.limits.minUniformBufferOffsetAlignment,
-	};
+	std::vector<std::unique_ptr<Buffer>> uboBuffers(SwapChain::MAX_FRAMES_IN_FLIGHT);
 	
-	globalUniformBuffer.map();
+	for (int i = 0; i < uboBuffers.size(); i ++) {
+		uboBuffers[i] = std::make_unique<Buffer>(
+			m_device,
+			sizeof(GlobalUniform),
+			1,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		uboBuffers[i]->map();
+	}
 	
 	SimpleRenderSystem simpleRenderSystem {m_device, m_renderer.getSwapChainRenderPass()};
 	
@@ -76,8 +77,8 @@ void Application::run() {
 			// update
 			GlobalUniform ubo{};
 			ubo.projectionView = camera.getProjection() * camera.getView();
-			globalUniformBuffer.writeToIndex(&ubo, frameIndex);
-			globalUniformBuffer.flushIndex(frameIndex);
+			uboBuffers[frameIndex]->writeToBuffer(&ubo);
+			uboBuffers[frameIndex]->flush();
 			
 			// render
 			m_renderer.beginSwapChainRenderPass(commandBuffer);
