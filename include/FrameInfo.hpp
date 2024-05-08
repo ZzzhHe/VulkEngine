@@ -1,12 +1,13 @@
-//
-//  FrameInfo.hpp
-//  VulkEngine
-//
-//  Created by Zhuohao He on 2024-05-08.
-//
+#pragma once
 
-#ifndef FrameInfo_h
-#define FrameInfo_h
+#include "Camera.hpp"
+
+#include <vulkan/vulkan.h>
 
 
-#endif /* FrameInfo_h */
+struct FrameInfo {
+	int frameIndex;
+	float frameTime;
+	VkCommandBuffer commandBuffer;
+	Camera &camera;
+};
