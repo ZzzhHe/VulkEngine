@@ -1,13 +1,30 @@
-//
-//  BillboardRenderSystem.hpp
-//  VulkEngine
-//
-//  Created by Zhuohao He on 2024-05-09.
-//
+#pragma once
 
-#ifndef BillboardRenderSystem_hpp
-#define BillboardRenderSystem_hpp
+#include "Camera.hpp"
+#include "Pipeline.hpp"
+#include "Device.hpp"
+#include "GameObject.hpp"
+#include "FrameInfo.hpp"
 
-#include <stdio.h>
+#include <memory>
+#include <vector>
 
-#endif /* BillboardRenderSystem_hpp */
+class BillboardRenderSystem {
+public:
+	
+	BillboardRenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalDescriptorSetLayout);
+	~BillboardRenderSystem();
+	
+	BillboardRenderSystem(const BillboardRenderSystem&) = delete;
+	BillboardRenderSystem &operator=(const BillboardRenderSystem&) = delete;
+	void render(FrameInfo& frameInfo);
+	
+private:
+	void createPipelineLayout(VkDescriptorSetLayout globalDescriptorSetLayout);
+	void createPipeline(VkRenderPass renderPass);
+	
+	
+	Device &m_device;
+	std::unique_ptr<Pipeline> m_pipeline;
+	VkPipelineLayout m_pipelineLayout;
+};

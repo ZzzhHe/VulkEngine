@@ -1,6 +1,7 @@
 #include "Application.hpp"
 
 #include "SimpleRenderSystem.hpp"
+#include "BillboardRenderSystem.hpp"
 #include "KeyboardController.hpp"
 #include "Camera.hpp"
 #include "Buffer.hpp"
@@ -65,6 +66,11 @@ void Application::run() {
 		m_renderer.getSwapChainRenderPass(),
 		globalSetLayout->getDescriptorSetLayout()};
 	
+	BillboardRenderSystem pointLightSystem {
+		m_device,
+		m_renderer.getSwapChainRenderPass(),
+		globalSetLayout->getDescriptorSetLayout()};
+	
 	Camera camera{};
 //	camera.setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
 	camera.setViewTarget(glm::vec3(-1.0f, -2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 2.5f));
@@ -110,6 +116,7 @@ void Application::run() {
 			// render
 			m_renderer.beginSwapChainRenderPass(commandBuffer);
 			simpleRenderSystem.renderGameObjects(frameInfo);
+			pointLightSystem.render(frameInfo);
 			m_renderer.endSwapChainRenderPass(commandBuffer);
 			m_renderer.endFrame();
 		}
