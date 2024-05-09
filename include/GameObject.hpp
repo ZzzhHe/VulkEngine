@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <memory>
+#include <unordered_map>
 
 class GameObject {
 	
@@ -19,6 +20,7 @@ class GameObject {
 	
 public:
 	using obj_id_t = unsigned int;
+	using Map = std::unordered_map<id_t, GameObject>;
 	
 	static GameObject createGameObject() {
 		static obj_id_t currentId = 0;

@@ -16,7 +16,8 @@
 #include <stdexcept>
 
 struct GlobalUniform { // Global Uniform Buffer Object
-	glm::mat4 projectionView{1.f};
+	glm::mat4 projection{1.f};
+	glm::mat4 view{1.f};
 	glm::vec4 ambientLightColor{1.f, 1.f, 1.f, 0.1f};
 	glm::vec3 lightPos{-1.f};
 	alignas(16) glm::vec3 viewerPos{0.f};
@@ -94,19 +95,21 @@ void Application::run() {
 				frameTime,
 				commandBuffer,
 				camera,
-				globalDescriptorSets[frameIndex]
+				globalDescriptorSets[frameIndex],
+				m_gameObjects
 			};
 			
 			// update
 			GlobalUniform ubo{};
-			ubo.projectionView = camera.getProjection() * camera.getView();
+			ubo.projection = camera.getProjection();
+			ubo.view = camera.getView();
 			ubo.viewerPos = viewerObject.transform.translation;
 			uboBuffers[frameIndex]->writeToBuffer(&ubo);
 			uboBuffers[frameIndex]->flush();
 			
 			// render
 			m_renderer.beginSwapChainRenderPass(commandBuffer);
-			simpleRenderSystem.renderGameObjects(frameInfo, m_gameObjects);
+			simpleRenderSystem.renderGameObjects(frameInfo);
 			m_renderer.endSwapChainRenderPass(commandBuffer);
 			m_renderer.endFrame();
 		}
@@ -121,20 +124,20 @@ void Application::loadGameObject() {
    
 	auto flatVase = GameObject::createGameObject();
 	flatVase.model = model;
-	flatVase.transform.translation = {-.2f, .5f, 0.5f};
+	flatVase.transform.translation = {-.1f, .5f, 0.5f};
 	flatVase.transform.scale = {.5f, .5f, .5f};
 	
-	m_gameObjects.push_back(std::move(flatVase));
+	m_gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 	
 	model = Model::createModelFromFile(m_device, "models/smooth_vase.obj");
 	// one model can be used in multiple game objects
    
 	auto smoothVase = GameObject::createGameObject();
 	smoothVase.model = model;
-	smoothVase.transform.translation = {.2f, .5f, 0.5f};
+	smoothVase.transform.translation = {.1f, .5f, 0.5f};
 	smoothVase.transform.scale = {.5f, .5f, .5f};
 	
-	m_gameObjects.push_back(std::move(smoothVase));
+	m_gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 	
 	model = Model::createModelFromFile(m_device, "models/quad.obj");
 	// one model can be used in multiple game objects
@@ -144,5 +147,5 @@ void Application::loadGameObject() {
 	floor.transform.translation = {0.f, 0.5f, 0.f};
 	floor.transform.scale = {3.f, 1.f, 3.f};
 	
-	m_gameObjects.push_back(std::move(floor));
+	m_gameObjects.emplace(floor.getId(), std::move(floor));
 }

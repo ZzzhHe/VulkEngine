@@ -61,7 +61,7 @@ void SimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
 
 
 void SimpleRenderSystem::renderGameObjects(
-	   FrameInfo& frameInfo, std::vector<GameObject>& gameObjects){
+	   FrameInfo& frameInfo){
 	
 	m_pipeline->bind(frameInfo.commandBuffer);
 	
@@ -75,7 +75,9 @@ void SimpleRenderSystem::renderGameObjects(
 		0,
 		nullptr);
 	 
-	for (auto& obj : gameObjects) {
+	for (auto& kv : frameInfo.gameObjects) {
+		
+		auto& obj = kv.second;
 		
 		SimplePushConstantData push {};
 		

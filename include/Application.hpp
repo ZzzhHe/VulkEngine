@@ -32,5 +32,5 @@ private:
 	
 	// the order of declaration matters
 	std::unique_ptr<DescriptorPool> m_globalPool{};
-	std::vector<GameObject> m_gameObjects;
+	GameObject::Map m_gameObjects;
 };
